@@ -19,10 +19,17 @@ Pindahkan project ke laptop lain atau clone repository Git-nya.
 ```bash
 git clone https://github.com/Wasthu-T/Prediksi_harga_kost.git
 cd nama-folder-project
-1. Buat dan Aktifkan Virtual Environment
+```
+### 2. Buat dan Aktifkan Virtual Environment
+```bash
 python -m venv venv
 venv\Scripts\activate
-2. Install Semua Dependency
+```
+### 3. Install Semua Dependency
+```bash
 pip install -r requirements.txt
-3. Jalankan Aplikasi
+```
+### 4. Jalankan Aplikasi
+```bash
 flask run
+```
