@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Harga Kost</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-lg max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-blue-700 text-center">Form Input Prediksi Harga Kost</h2>
+
+        <form id="kostForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Area/Subdistrict -->
+            <div>
+                <label class="block font-medium mb-1">Area/Subdistrict</label>
+                <select id="areaSelect" name="area_subdistrict" class="w-full border rounded-lg p-2" required>
+                    <option value="" disabled selected>Loading...</option> <!-- Placeholder awal -->
+                </select>
+            </div>
+
+            <!-- Tahun Bangun -->
+            <div>
+                <label class="block font-medium mb-1">Tahun Bangun (Building Year)</label>
+                <select name="building_year" class="w-full border rounded-lg p-2" required>
+                    <option value="">-- Pilih Tahun --</option>
+                    <option value="0">Tidak Tahu</option>
+                    <!-- Tahun dari 1990 hingga 2025 -->
+                    {% for year in range(1990, 2026) %}
+                    <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Ukuran Panjang -->
+            <div>
+                <label class="block font-medium mb-1">Panjang Kamar</label>
+                <input type="number" step="any" name="panjang" class="w-full border rounded-lg p-2" min="1" max="10"
+                    required>
+            </div>
+
+            <!-- Ukuran Lebar -->
+            <div>
+                <label class="block font-medium mb-1">Lebar Kamar</label>
+                <input type="number" step="any" name="lebar" class="w-full border rounded-lg p-2" min="1" max="10"
+                    required>
+            </div>
+
+            <!-- Deposit -->
+            <div>
+                <label class="block font-medium mb-1">Deposit (0–750000)</label>
+                <input type="number" name="deposit" class="w-full border rounded-lg p-2" min="0" max="750000" value="0"
+                    required>
+            </div>
+
+            <!-- Unnamed: 0 -->
+            <div>
+                <input type="hidden" name="Unnamed: 0">
+            </div>
+            <!-- maks_orang -->
+            <div>
+                <input type="hidden" name="maks_orang">
+            </div>
+            <!-- denda_keterlambatan -->
+            <div>
+                <input type="hidden" name="denda_keterlambatan">
+            </div>
+
+
+            <!-- Boolean Fields as Checkboxes -->
+            <div class="md:col-span-2">
+                <label class="block font-medium mb-2">Fasilitas Tambahan</label>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <label><input type="checkbox" name="ac" class="mr-2">AC</label>
+                    <label><input type="checkbox" name="air_panas" class="mr-2">Air Panas</label>
+                    <label><input type="checkbox" name="k_mandi_dalam" class="mr-2">K. Mandi Dalam</label>
+                    <label><input type="checkbox" name="k_mandi_luar.1" class="mr-2">K. Mandi Luar</label>
+                    <label><input type="checkbox" name="shower" class="mr-2">Shower</label>
+                    <label><input type="checkbox" name="wastafel.1" class="mr-2">Wastafel</label>
+                    <label><input type="checkbox" name="tv" class="mr-2">TV Pribadi</label>
+                    <label><input type="checkbox" name="tv.1" class="mr-2">TV Tamu</label>
+                    <label><input type="checkbox" name="parkir_mobil" class="mr-2">Parkir Mobil</label>
+                </div>
+            </div>
+
+            <div class="md:col-span-2">
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                    Prediksi Harga
+                </button>
+            </div>
+            <div id="result" class="md:col-span-2 text-center text-lg font-semibold text-green-600 mt-4"></div>
+        </form>
+    </div>
+</body>
+
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("/api/subdistrict")  // Ganti dengan URL API yang benar
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const selectElement = document.getElementById("areaSelect");
+                selectElement.innerHTML = '<option value="" disabled selected>Pilih Area</option>'; // Reset dengan pilihan default
+
+                data.values.forEach(area => {
+                    const option = document.createElement("option");
+                    option.value = area; // Bisa pakai `area.name` jika ingin berdasarkan nama
+                    option.textContent = area;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Gagal mengambil data dari API:", error);
+                document.getElementById("areaSelect").innerHTML = '<option value="" disabled>Gagal memuat data</option>';
+            });
+    });
+</script>
+
+
+<script>
+    const form = document.getElementById('kostForm');
+    const result = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        // Disable tombol submit
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Memproses...";
+        const formData = new FormData(form);
+        const data = {
+            'ac': formData.has('ac'),
+            'air_panas': formData.has('air_panas'),
+            'k_mandi_dalam': formData.has('k_mandi_dalam'),
+            'lebar': parseFloat(formData.get('lebar')),
+            'parkir_mobil': formData.has('parkir_mobil'),
+            'panjang': parseFloat(formData.get('panjang')),
+            'building_year': parseInt(formData.get('building_year')),
+            'shower': formData.has('shower'),
+            'deposit': parseInt(formData.get('deposit')),
+            'wastafel.1': formData.has('wastafel.1'),
+            'tv': formData.has('tv'),
+            'tv.1': formData.has('tv.1'),
+            'area_subdistrict': formData.get('area_subdistrict'),
+            'k_mandi_luar.1': formData.has('k_mandi_luar.1')
+        };
+        console.log(data);
+        fetch("/api/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+            .then(res => res.json())
+            .then(response => {
+                console.log(response);
+                if (response.status === 429) {
+                    result.innerText = "Terlalu banyak permintaan. Silakan coba lagi nanti.";
+                    result.classList.replace('text-green-600', 'text-red-600');
+                    return;
+                }
+                if (response.message.status === "success") {
+                    console.log(response)
+                    const nilai_akhir = Math.ceil(response.values.nilai_akhir).toLocaleString("id-ID");
+                    const nilai_predict = Math.ceil(response.values.nilai_predict).toLocaleString("id-ID");
+                    result.innerText = `Prediksi: Rp${nilai_akhir} - Rp${nilai_predict}`;
+                    result.classList.remove('text-red-600');
+                    result.classList.add('text-green-600');
+                } else {
+                    result.innerText = response.values.message || "Terjadi kesalahan.";
+                    result.classList.remove('text-green-600');
+                    result.classList.add('text-red-600');
+                }
+            })
+            .catch(err => {
+                result.innerText = "Gagal menghubungi server.";
+                result.classList.remove('text-green-600');
+                result.classList.add('text-red-600');
+            })
+            .finally(() => {
+                // Aktifkan kembali tombol submit setelah selesai
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Prediksi";
+            });
+    });
+</script>
