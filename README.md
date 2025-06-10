@@ -1,6 +1,6 @@
 # Aplikasi Prediksi Harga Kost
 
-Aplikasi web ini menggunakan Flask dan TailwindCSS untuk memprediksi harga kost berdasarkan berbagai fitur, seperti fasilitas kamar, lokasi, dan lainnya.
+Aplikasi web ini menggunakan Flask dan TailwindCSS untuk memprediksi harga kost berdasarkan berbagai fitur, seperti fasilitas kamar, lokasi, ukuran kamar, dan tahun bangunan.
 
 ## 📦 Fitur
 
